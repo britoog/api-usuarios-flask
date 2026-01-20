@@ -1,0 +1,25 @@
+# app.py
+from flask import Flask, request, jsonify
+import sqlite3
+
+app = Flask(__name__)
+
+def get_db():
+    return sqlite3.connect("users.db")
+
+@app.route("/users", methods=["POST"])
+def create_user():
+    data = request.json
+    db = get_db()
+    db.execute("INSERT INTO users (name, email) VALUES (?, ?)",
+               (data["name"], data["email"]))
+    db.commit()
+    return jsonify({"message": "Usuário criado"}), 201
+
+@app.route("/users", methods=["GET"])
+def list_users():
+    db = get_db()
+    users = db.execute("SELECT * FROM users").fetchall()
+    return jsonify(users)
+
+app.run(debug=True)
